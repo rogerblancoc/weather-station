@@ -2,6 +2,9 @@
 #include "esp_log.h"
 #include "driver/i2c_master.h"
 #include "driver/gpio.h"
+#include "aht20.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 const static char *TAG = "weather-station";
 
@@ -16,6 +19,7 @@ void app_main(void)
         .scl_io_num = GPIO_NUM_4,
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
     };
     i2c_master_bus_handle_t bus_handle;
 
@@ -24,14 +28,26 @@ void app_main(void)
     ESP_LOGI(TAG, "I2C bus initialized");
 
     // Initialize AHT20
-    const i2c_device_config_t device_config = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = 0x38,
-        .scl_speed_hz = 100000,
+    const i2c_aht20_config_t aht20_config = {
+        .i2c_config.device_address = AHT20_ADDRESS_0,
+        .i2c_config.scl_speed_hz = 100000,
+        .i2c_timeout = 100,
     };
-    i2c_master_dev_handle_t device_handle;
+    aht20_dev_handle_t aht20_handle;
 
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &device_config, &device_handle));
+    ESP_ERROR_CHECK(aht20_new_sensor(bus_handle, &aht20_config, &aht20_handle));
 
     ESP_LOGI(TAG, "AHT20 device added");
+
+    float temp, hum;
+
+    int counter = 0;
+    while(counter < 10) {
+        // Read temperature and humidity
+        ESP_ERROR_CHECK(aht20_read_float(aht20_handle, &temp, &hum));
+        ESP_LOGI(TAG, "[%d] Temperature: %2.2f C; Humidity: %2.2f", counter, temp, hum);
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        counter++;
+    }
 }
