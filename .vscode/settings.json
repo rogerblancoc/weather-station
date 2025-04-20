@@ -3,8 +3,13 @@
     "idf.espIdfPath": "/home/roger/src/esp32/esp-idf",
     "idf.pythonInstallPath": "/home/roger/.espressif/python_env/idf5.4_py3.13_env/bin/python",
     "idf.openOcdConfigs": [
-        "board/esp32s3-builtin.cfg"
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32s3.cfg"
     ],
     "idf.port": "/dev/ttyACM0",
-    "idf.toolsPath": "/home/roger/.espressif"
+    "idf.toolsPath": "/home/roger/.espressif",
+    "idf.flashType": "UART",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32s3"
+    }
 }
