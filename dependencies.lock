@@ -1,0 +1,43 @@
+dependencies:
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 0.5.3
+  idf:
+    source:
+      type: idf
+    version: 5.4.1
+  jack-ingithub/aht20:
+    component_hash: a920995922e89025634182eeeaf74a4c54a27c3052623be6fad7a9cf1c5ecb9b
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=4.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32c2
+    - esp32c3
+    - esp32c6
+    - esp32h2
+    - esp32s2
+    - esp32s3
+    version: 0.1.1
+direct_dependencies:
+- idf
+- jack-ingithub/aht20
+manifest_hash: 724540416b177a183df56086226fb3c5e89424e9eb24266c0c772737f929620b
+target: esp32s3
+version: 2.0.0
