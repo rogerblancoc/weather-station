@@ -3,6 +3,7 @@
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
 #include "esp_event.h"
+#include "esp_http_server.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "freertos/task.h"
@@ -43,6 +44,34 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
     return aht20_handle;
 }
 
+static esp_err_t root_get_handler(httpd_req_t *req)
+{
+    const char* resp = "Hello, World!";
+    httpd_resp_sendstr(req, resp);
+    ESP_LOGI(TAG, "HTTP GET request received: %s", resp);
+    return ESP_OK;
+}
+
+esp_err_t start_http_server() {
+    httpd_handle_t server = NULL;
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    //config.uri_match_fn = httpd_uri_match_wildcard;
+
+    ESP_LOGI(TAG, "Starting HTTP Server");
+    ESP_ERROR_CHECK(httpd_start(&server, &config));
+
+    httpd_uri_t root_uri_get = {
+        .uri       = "/",
+        .method    = HTTP_GET,
+        .handler   = root_get_handler,
+        .user_ctx  = NULL
+    };
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
+    ESP_LOGI(TAG, "HTTP Server started");
+
+    return ESP_OK;
+}
+
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting Weather Station...");
@@ -62,6 +91,8 @@ void app_main(void)
     // Initialize AHT20 sensor
     const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
     ESP_LOGI(TAG, "AHT20 device added");
+
+    ESP_ERROR_CHECK(start_http_server());
 
     float temp, hum;
 
