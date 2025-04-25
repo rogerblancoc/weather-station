@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "aht20.h"
+#include "cJSON.h"
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
 #include "esp_event.h"
@@ -48,7 +49,30 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 {
     const char* resp = "Hello, World!";
     httpd_resp_sendstr(req, resp);
-    ESP_LOGI(TAG, "HTTP GET request received: %s", resp);
+    ESP_LOGI(TAG, "/ : %s", resp);
+    return ESP_OK;
+}
+
+static esp_err_t temp_get_handler(httpd_req_t *req)
+{
+    float temp, hum;
+    //ESP_ERROR_CHECK(aht20_read_float(aht20_handle, &temp, &hum));
+    temp = 25.0;
+    hum = 60.0;
+
+    httpd_resp_set_type(req, "application/json");
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddNumberToObject(root, "temperature", temp);
+    cJSON_AddNumberToObject(root, "humidity", hum);
+    const char *temp_info = cJSON_Print(root);
+
+    httpd_resp_sendstr(req, temp_info);
+    ESP_LOGI(TAG, "/temperature: %s", temp_info);
+
+    free((void *)temp_info);
+    cJSON_Delete(root);
+
     return ESP_OK;
 }
 
@@ -67,6 +91,15 @@ esp_err_t start_http_server() {
         .user_ctx  = NULL
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
+
+    httpd_uri_t temp_uri_get = {
+        .uri       = "/temperature",
+        .method    = HTTP_GET,
+        .handler   = temp_get_handler,
+        .user_ctx  = NULL
+    };
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &temp_uri_get));
+
     ESP_LOGI(TAG, "HTTP Server started");
 
     return ESP_OK;
@@ -93,14 +126,4 @@ void app_main(void)
     ESP_LOGI(TAG, "AHT20 device added");
 
     ESP_ERROR_CHECK(start_http_server());
-
-    float temp, hum;
-
-    while(true) {
-        // Read temperature and humidity
-        ESP_ERROR_CHECK(aht20_read_float(aht20_handle, &temp, &hum));
-        ESP_LOGI(TAG, "Temperature: %2.2f C; Humidity: %2.2f", temp, hum);
-        // Wait for 2 seconds before the next reading
-        vTaskDelay(pdMS_TO_TICKS(2000));
-    }
 }
