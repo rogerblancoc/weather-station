@@ -53,13 +53,11 @@ void app_main(void)
 
     float temp, hum;
 
-    int counter = 0;
-    while(counter < 10) {
+    while(true) {
         // Read temperature and humidity
         ESP_ERROR_CHECK(aht20_read_float(aht20_handle, &temp, &hum));
-        ESP_LOGI(TAG, "[%d] Temperature: %2.2f C; Humidity: %2.2f", counter, temp, hum);
-
+        ESP_LOGI(TAG, "Temperature: %2.2f C; Humidity: %2.2f", temp, hum);
+        // Wait for 2 seconds before the next reading
         vTaskDelay(pdMS_TO_TICKS(2000));
-        counter++;
     }
 }
