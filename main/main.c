@@ -1,10 +1,14 @@
 #include <stdio.h>
-#include "esp_log.h"
-#include "driver/i2c_master.h"
-#include "driver/gpio.h"
 #include "aht20.h"
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+#include "driver/gpio.h"
+#include "driver/i2c_master.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "esp_netif.h"
+#include "freertos/task.h"
+#include "freertos/FreeRTOS.h"
+#include "nvs_flash.h"
+#include "protocol_examples_common.h"
 
 const static char *TAG = "weather-station";
 
@@ -42,6 +46,14 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting Weather Station...");
+
+    // Initialize NVS, TCP/IP, and event loop
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    // Initialize Wi-Fi
+    ESP_ERROR_CHECK(example_connect());
+    ESP_LOGI(TAG, "Wi-Fi connected");
 
     // Initialize I2C bus
     const i2c_master_bus_handle_t bus_handle = initializeI2CBus();

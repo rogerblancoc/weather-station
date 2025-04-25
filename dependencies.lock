@@ -35,9 +35,16 @@ dependencies:
     - esp32s2
     - esp32s3
     version: 0.1.1
+  protocol_examples_common:
+    dependencies: []
+    source:
+      path: /home/roger/src/esp32/esp-idf/examples/common_components/protocol_examples_common
+      type: local
+    version: '*'
 direct_dependencies:
 - idf
 - jack-ingithub/aht20
-manifest_hash: 724540416b177a183df56086226fb3c5e89424e9eb24266c0c772737f929620b
+- protocol_examples_common
+manifest_hash: 5c53534c034bc9afb3214659cbd4642a02abb85811f2f41591cd7248b6315003
 target: esp32s3
 version: 2.0.0
