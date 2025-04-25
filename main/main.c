@@ -14,6 +14,10 @@
 
 const static char *TAG = "weather-station";
 
+typedef struct {
+    aht20_dev_handle_t aht20_handle;
+} sensor_handles_t;
+
 i2c_master_bus_handle_t initializeI2CBus()
 {
     const i2c_master_bus_config_t bus_config = {
@@ -56,9 +60,10 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 static esp_err_t temp_get_handler(httpd_req_t *req)
 {
     float temp, hum;
-    //ESP_ERROR_CHECK(aht20_read_float(aht20_handle, &temp, &hum));
-    temp = 25.0;
-    hum = 60.0;
+
+    sensor_handles_t *sensor_handles = (sensor_handles_t *)req->user_ctx;
+
+    ESP_ERROR_CHECK(aht20_read_float(sensor_handles->aht20_handle, &temp, &hum));
 
     httpd_resp_set_type(req, "application/json");
 
@@ -76,7 +81,8 @@ static esp_err_t temp_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t start_http_server() {
+esp_err_t start_http_server(sensor_handles_t *sensor_handles)
+{
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     //config.uri_match_fn = httpd_uri_match_wildcard;
@@ -88,7 +94,7 @@ esp_err_t start_http_server() {
         .uri       = "/",
         .method    = HTTP_GET,
         .handler   = root_get_handler,
-        .user_ctx  = NULL
+        .user_ctx  = NULL,
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
 
@@ -96,7 +102,7 @@ esp_err_t start_http_server() {
         .uri       = "/temperature",
         .method    = HTTP_GET,
         .handler   = temp_get_handler,
-        .user_ctx  = NULL
+        .user_ctx  = sensor_handles,
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &temp_uri_get));
 
@@ -125,5 +131,12 @@ void app_main(void)
     const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
     ESP_LOGI(TAG, "AHT20 device added");
 
-    ESP_ERROR_CHECK(start_http_server());
+    sensor_handles_t *sensor_handles = malloc(sizeof(sensor_handles));
+    if (sensor_handles == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate memory for sensor handles");
+        return;
+    }
+    sensor_handles->aht20_handle = aht20_handle;
+
+    ESP_ERROR_CHECK(start_http_server(sensor_handles));
 }
