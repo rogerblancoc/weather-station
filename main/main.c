@@ -8,11 +8,8 @@
 
 const static char *TAG = "weather-station";
 
-void app_main(void)
+i2c_master_bus_handle_t initializeI2CBus()
 {
-    ESP_LOGI(TAG, "Starting Weather Station...");
-
-    // Initialize I2C bus
     const i2c_master_bus_config_t bus_config = {
         .i2c_port = -1,
         .sda_io_num = GPIO_NUM_1,
@@ -25,9 +22,11 @@ void app_main(void)
 
     ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &bus_handle));
 
-    ESP_LOGI(TAG, "I2C bus initialized");
+    return bus_handle;
+}
 
-    // Initialize AHT20
+aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
+{
     const i2c_aht20_config_t aht20_config = {
         .i2c_config.device_address = AHT20_ADDRESS_0,
         .i2c_config.scl_speed_hz = 100000,
@@ -37,6 +36,19 @@ void app_main(void)
 
     ESP_ERROR_CHECK(aht20_new_sensor(bus_handle, &aht20_config, &aht20_handle));
 
+    return aht20_handle;
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "Starting Weather Station...");
+
+    // Initialize I2C bus
+    const i2c_master_bus_handle_t bus_handle = initializeI2CBus();
+    ESP_LOGI(TAG, "I2C bus initialized");
+
+    // Initialize AHT20 sensor
+    const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
     ESP_LOGI(TAG, "AHT20 device added");
 
     float temp, hum;
