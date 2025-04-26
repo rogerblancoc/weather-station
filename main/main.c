@@ -49,8 +49,17 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
     return aht20_handle;
 }
 
+void send_cors_headers(httpd_req_t *req)
+{
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
+}
+
 static esp_err_t root_get_handler(httpd_req_t *req)
 {
+    send_cors_headers(req);
+
     const char* resp = "Hello, World!";
     httpd_resp_sendstr(req, resp);
     ESP_LOGI(TAG, "/ : %s", resp);
@@ -59,6 +68,8 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 
 static esp_err_t temp_get_handler(httpd_req_t *req)
 {
+    send_cors_headers(req);
+
     float temp, hum;
 
     sensor_handles_t *sensor_handles = (sensor_handles_t *)req->user_ctx;
