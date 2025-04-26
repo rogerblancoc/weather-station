@@ -66,14 +66,13 @@ static esp_err_t root_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-static esp_err_t temp_get_handler(httpd_req_t *req)
+static esp_err_t weather_get_handler(httpd_req_t *req)
 {
     send_cors_headers(req);
 
-    float temp, hum;
-
     sensor_handles_t *sensor_handles = (sensor_handles_t *)req->user_ctx;
 
+    float temp, hum;
     ESP_ERROR_CHECK(aht20_read_float(sensor_handles->aht20_handle, &temp, &hum));
 
     httpd_resp_set_type(req, "application/json");
@@ -84,7 +83,7 @@ static esp_err_t temp_get_handler(httpd_req_t *req)
     const char *temp_info = cJSON_Print(root);
 
     httpd_resp_sendstr(req, temp_info);
-    ESP_LOGI(TAG, "/temperature: %s", temp_info);
+    ESP_LOGI(TAG, "/weather:\n%s", temp_info);
 
     free((void *)temp_info);
     cJSON_Delete(root);
@@ -109,13 +108,13 @@ esp_err_t start_http_server(sensor_handles_t *sensor_handles)
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
 
-    httpd_uri_t temp_uri_get = {
-        .uri       = "/temperature",
+    httpd_uri_t weather_uri_get = {
+        .uri       = "/weather",
         .method    = HTTP_GET,
-        .handler   = temp_get_handler,
+        .handler   = weather_get_handler,
         .user_ctx  = sensor_handles,
     };
-    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &temp_uri_get));
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &weather_uri_get));
 
     ESP_LOGI(TAG, "HTTP Server started");
 

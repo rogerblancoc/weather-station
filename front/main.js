@@ -38,7 +38,7 @@ function roundNumber(num, n) {
 const URL = 'http://192.168.0.73';
 
 async function updateChart() {
-    const url = `${URL}/temperature`;
+    const url = `${URL}/weather`;
     try {
         const response = await fetch(url, {
             method: 'GET',
