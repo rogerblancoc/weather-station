@@ -1,3 +1,12 @@
+Highcharts.setOptions({
+    time: {
+        timezone: undefined,
+    },
+    lang: {
+        locale: 'en-GB',
+    },
+});
+
 const chart = Highcharts.chart('temperature-chart', {
     title: { text: 'Temperature' },
     plotOptions: {
