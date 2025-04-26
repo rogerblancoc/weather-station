@@ -7,7 +7,7 @@ Highcharts.setOptions({
     },
 });
 
-const chart = Highcharts.chart('temperature-chart', {
+const temperature_chart = Highcharts.chart('temperature-chart', {
     title: { text: 'Temperature' },
     plotOptions: {
         line: {
@@ -31,33 +31,59 @@ const chart = Highcharts.chart('temperature-chart', {
     },
 });
 
+const humidity_chart = Highcharts.chart('humidity-chart', {
+    title: { text: 'Humidity' },
+    plotOptions: {
+        line: {
+            dataLabels: { enabled: true }
+        },
+    },
+    xAxis: {
+        title: { text: 'Time' },
+        type: 'datetime',
+    },
+    yAxis: {
+        title: { text: 'Humidity (%)' }
+    },
+    series: [{
+        showInLegend: false,
+        name: 'Percentage',
+        data: [],
+    }],
+    credits: {
+        enabled: false
+    },
+});
+
 function roundNumber(num, n) {
     return Math.round(num * Math.pow(10, n)) / Math.pow(10, n);
 }
 
 const URL = 'http://192.168.0.73';
 
-async function updateChart() {
+async function updateCharts() {
     const url = `${URL}/weather`;
     try {
-        const response = await fetch(url, {
-            method: 'GET',
-        });
+        const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        console.log(data);
 
         if(data.temperature) {
             const temperature = roundNumber(data.temperature, 2);
             const time = new Date().getTime();
-            chart.series[0].addPoint([time, temperature], animation=true);
+            temperature_chart.series[0].addPoint([time, temperature], animation=true);
+        }
+        if(data.humidity) {
+            const humidity = roundNumber(data.humidity, 2);
+            const time = new Date().getTime();
+            humidity_chart.series[0].addPoint([time, humidity], animation=true);
         }
     } catch (error) {
         console.error(error);
     }
 }
 
-updateChart();
+updateCharts();
 // every 2 seconds
 setInterval(() => {
-    updateChart();
+    updateCharts();
 }, 2000);
