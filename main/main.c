@@ -49,6 +49,26 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
     return aht20_handle;
 }
 
+sensor_handles_t* start_sensors()
+{
+    // Initialize I2C bus
+    const i2c_master_bus_handle_t bus_handle = initializeI2CBus();
+    ESP_LOGI(TAG, "I2C bus initialized");
+
+    // Initialize AHT20 sensor
+    const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
+    ESP_LOGI(TAG, "AHT20 device added");
+
+    sensor_handles_t *sensor_handles = malloc(sizeof(sensor_handles));
+    if (sensor_handles == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate memory for sensor handles");
+        return NULL;
+    }
+
+    sensor_handles->aht20_handle = aht20_handle;
+    return sensor_handles;
+}
+
 void send_cors_headers(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -133,20 +153,9 @@ void app_main(void)
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Wi-Fi connected");
 
-    // Initialize I2C bus
-    const i2c_master_bus_handle_t bus_handle = initializeI2CBus();
-    ESP_LOGI(TAG, "I2C bus initialized");
-
-    // Initialize AHT20 sensor
-    const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
-    ESP_LOGI(TAG, "AHT20 device added");
-
-    sensor_handles_t *sensor_handles = malloc(sizeof(sensor_handles));
-    if (sensor_handles == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate memory for sensor handles");
-        return;
-    }
-    sensor_handles->aht20_handle = aht20_handle;
+    // Initialize all sensors
+    sensor_handles_t *sensor_handles = start_sensors();
+    ESP_LOGI(TAG, "Sensors initialized");
 
     ESP_ERROR_CHECK(start_http_server(sensor_handles));
 }
