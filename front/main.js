@@ -15,13 +15,15 @@ const chart = Highcharts.chart('temperature-chart', {
         },
     },
     xAxis: {
+        title: { text: 'Time' },
         type: 'datetime',
     },
     yAxis: {
-        title: { text: 'Temperature' }
+        title: { text: 'Temperature (°C)' }
     },
     series: [{
         showInLegend: false,
+        name: 'Degrees',
         data: [],
     }],
     credits: {
