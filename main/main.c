@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <fcntl.h>
 #include "aht20.h"
 #include "cJSON.h"
 #include "driver/gpio.h"
@@ -8,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_spiffs.h"
+#include "esp_vfs.h"
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
@@ -153,11 +155,49 @@ static esp_err_t weather_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static esp_err_t root_get_handler(httpd_req_t *req)
+{
+    send_cors_headers(req);
+
+    // Open the file
+    int fd = open("/www/index.html", O_RDONLY);
+    if (fd < 0) {
+        ESP_LOGE(TAG, "Failed to open file");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to read existing file");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "text/html");
+
+    // Buffer for reading chunks
+    char buffer[1024];
+    ssize_t bytes_read;
+
+    do {
+        // Read up to sizeof(buffer) - 1 bytes
+        bytes_read = read(fd, buffer, 1024);
+        if (bytes_read < 0) {
+            ESP_LOGE(TAG, "Error reading file");
+            return ESP_FAIL;
+        }
+
+        ESP_ERROR_CHECK(httpd_resp_send_chunk(req, buffer, bytes_read));
+    } while (bytes_read > 0);
+
+    // Close file
+    close(fd);
+    ESP_LOGI(TAG, "File sending complete");
+    /* Respond with an empty chunk to signal HTTP response completion */
+    httpd_resp_send_chunk(req, NULL, 0);
+
+    return ESP_OK;
+}
+
 esp_err_t start_http_server(sensor_handles_t *sensor_handles)
 {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    //config.uri_match_fn = httpd_uri_match_wildcard;
+    config.uri_match_fn = httpd_uri_match_wildcard;
 
     ESP_LOGI(TAG, "Starting HTTP Server");
     ESP_ERROR_CHECK(httpd_start(&server, &config));
@@ -177,6 +217,14 @@ esp_err_t start_http_server(sensor_handles_t *sensor_handles)
         .user_ctx  = sensor_handles,
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &weather_uri_get));
+
+    httpd_uri_t root_uri_get = {
+        .uri       = "/*",
+        .method    = HTTP_GET,
+        .handler   = root_get_handler,
+        .user_ctx  = NULL,
+    };
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
 
     ESP_LOGI(TAG, "HTTP Server started");
 
