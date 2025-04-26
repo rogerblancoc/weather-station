@@ -109,13 +109,22 @@ void send_cors_headers(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
 }
 
-static esp_err_t root_get_handler(httpd_req_t *req)
+static esp_err_t hello_get_handler(httpd_req_t *req)
 {
     send_cors_headers(req);
 
-    const char* resp = "Hello, World!";
-    httpd_resp_sendstr(req, resp);
-    ESP_LOGI(TAG, "/ : %s", resp);
+    httpd_resp_set_type(req, "application/json");
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "message", "Hello, World!");
+    const char *message_info = cJSON_Print(root);
+
+    httpd_resp_sendstr(req, message_info);
+    ESP_LOGI(TAG, "/api/hello:\n%s", message_info);
+
+    free((void *)message_info);
+    cJSON_Delete(root);
+
     return ESP_OK;
 }
 
@@ -136,7 +145,7 @@ static esp_err_t weather_get_handler(httpd_req_t *req)
     const char *temp_info = cJSON_Print(root);
 
     httpd_resp_sendstr(req, temp_info);
-    ESP_LOGI(TAG, "weather:\n%s", temp_info);
+    ESP_LOGI(TAG, "/api/weather:\n%s", temp_info);
 
     free((void *)temp_info);
     cJSON_Delete(root);
@@ -153,13 +162,13 @@ esp_err_t start_http_server(sensor_handles_t *sensor_handles)
     ESP_LOGI(TAG, "Starting HTTP Server");
     ESP_ERROR_CHECK(httpd_start(&server, &config));
 
-    httpd_uri_t root_uri_get = {
-        .uri       = "/",
+    httpd_uri_t hello_uri_get = {
+        .uri       = "/api/hello",
         .method    = HTTP_GET,
-        .handler   = root_get_handler,
+        .handler   = hello_get_handler,
         .user_ctx  = NULL,
     };
-    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root_uri_get));
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &hello_uri_get));
 
     httpd_uri_t weather_uri_get = {
         .uri       = "/api/weather",
