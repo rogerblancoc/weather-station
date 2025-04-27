@@ -111,6 +111,23 @@ void send_cors_headers(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
 }
 
+void set_content_type(httpd_req_t *req, const char *filepath)
+{
+    const char *type;
+    if (strstr(filepath, ".html")) {
+        type = "text/html";
+    } else if (strstr(filepath, ".css")) {
+        type = "text/css";
+    } else if (strstr(filepath, ".js")) {
+        type = "application/javascript";
+    } else if (strstr(filepath, ".ico")) {
+        type = "image/x-icon";
+    } else {
+        type = "text/plain";
+    }
+    httpd_resp_set_type(req, type);
+}
+
 static esp_err_t hello_get_handler(httpd_req_t *req)
 {
     send_cors_headers(req);
@@ -178,7 +195,7 @@ static esp_err_t root_get_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    httpd_resp_set_type(req, "text/html");
+    set_content_type(req, filepath);
 
     // Buffer for reading chunks
     char buffer[1024];
