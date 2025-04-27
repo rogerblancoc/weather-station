@@ -55,7 +55,7 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
     return aht20_handle;
 }
 
-sensor_handles_t* start_sensors()
+sensor_handles_t* sensors_init()
 {
     // Initialize I2C bus
     const i2c_master_bus_handle_t bus_handle = initializeI2CBus();
@@ -75,7 +75,7 @@ sensor_handles_t* start_sensors()
     return sensor_handles;
 }
 
-esp_err_t init_fs()
+esp_err_t fs_init()
 {
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/www",
@@ -221,7 +221,7 @@ static esp_err_t root_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t start_http_server(sensor_handles_t *sensor_handles)
+esp_err_t http_server_init(sensor_handles_t *sensor_handles)
 {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -269,14 +269,17 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     // Initialize Wi-Fi
     ESP_ERROR_CHECK(example_connect());
-    ESP_LOGI(TAG, "Wi-Fi connected");
+    ESP_LOGI(TAG, "Wi-Fi initialized");
 
     // Initialize all sensors
-    sensor_handles_t *sensor_handles = start_sensors();
+    sensor_handles_t *sensor_handles = sensors_init();
     ESP_LOGI(TAG, "Sensors initialized");
 
-    ESP_ERROR_CHECK(init_fs());
+    // Initialize SPIFFS
+    ESP_ERROR_CHECK(fs_init());
     ESP_LOGI(TAG, "SPIFFS initialized");
 
-    ESP_ERROR_CHECK(start_http_server(sensor_handles));
+    // Initialize HTTP server
+    ESP_ERROR_CHECK(http_server_init(sensor_handles));
+    ESP_LOGI(TAG, "HTTP Server initialized");
 }
