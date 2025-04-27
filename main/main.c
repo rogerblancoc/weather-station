@@ -21,6 +21,9 @@ typedef struct {
     aht20_dev_handle_t aht20_handle;
 } sensor_handles_t;
 
+#define MAX_BUFFER_SIZE 1024
+#define MAX_FILEPATH_SIZE 128
+
 i2c_master_bus_handle_t initializeI2CBus()
 {
     const i2c_master_bus_config_t bus_config = {
@@ -176,9 +179,7 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 {
     send_cors_headers(req);
 
-    char filepath[128] = "";
-
-    strlcat(filepath, "/www", sizeof(filepath));
+    char filepath[MAX_FILEPATH_SIZE] = "/www";
 
     if (strcmp(req->uri, "/") == 0) {
         strlcat(filepath, "/index.html", sizeof(filepath));
@@ -198,12 +199,11 @@ static esp_err_t root_get_handler(httpd_req_t *req)
     set_content_type(req, filepath);
 
     // Buffer for reading chunks
-    char buffer[1024];
+    char buffer[MAX_BUFFER_SIZE];
     ssize_t bytes_read;
 
     do {
-        // Read up to sizeof(buffer) - 1 bytes
-        bytes_read = read(fd, buffer, 1024);
+        bytes_read = read(fd, buffer, MAX_BUFFER_SIZE);
         if (bytes_read < 0) {
             ESP_LOGE(TAG, "Error reading file");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send file");
@@ -213,10 +213,9 @@ static esp_err_t root_get_handler(httpd_req_t *req)
         ESP_ERROR_CHECK(httpd_resp_send_chunk(req, buffer, bytes_read));
     } while (bytes_read > 0);
 
-    // Close file
     close(fd);
     ESP_LOGI(TAG, "File sending complete");
-    /* Respond with an empty chunk to signal HTTP response completion */
+    // Respond with an empty chunk to signal HTTP response completion
     httpd_resp_send_chunk(req, NULL, 0);
 
     return ESP_OK;
