@@ -59,7 +59,7 @@ function roundNumber(num, n) {
     return Math.round(num * Math.pow(10, n)) / Math.pow(10, n);
 }
 
-const URL = 'http://192.168.0.73';
+const URL = 'http://weather-station.local';
 
 async function updateCharts() {
     const url = `${URL}/api/weather`;
