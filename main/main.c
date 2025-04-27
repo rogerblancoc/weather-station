@@ -159,8 +159,19 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 {
     send_cors_headers(req);
 
+    char filepath[128] = "";
+
+    strlcat(filepath, "/www", sizeof(filepath));
+
+    if (strcmp(req->uri, "/") == 0) {
+        strlcat(filepath, "/index.html", sizeof(filepath));
+    } else {
+        strlcat(filepath, req->uri, sizeof(filepath));
+    }
+    ESP_LOGI(TAG, "%s", filepath);
+
     // Open the file
-    int fd = open("/www/index.html", O_RDONLY);
+    int fd = open(filepath, O_RDONLY);
     if (fd < 0) {
         ESP_LOGE(TAG, "Failed to open file");
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to read existing file");
@@ -178,6 +189,7 @@ static esp_err_t root_get_handler(httpd_req_t *req)
         bytes_read = read(fd, buffer, 1024);
         if (bytes_read < 0) {
             ESP_LOGE(TAG, "Error reading file");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send file");
             return ESP_FAIL;
         }
 
