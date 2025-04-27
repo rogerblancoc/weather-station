@@ -12,6 +12,7 @@
 #include "esp_vfs.h"
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
+#include "mdns.h"
 #include "nvs_flash.h"
 #include "protocol_examples_common.h"
 
@@ -23,6 +24,18 @@ typedef struct {
 
 #define MAX_BUFFER_SIZE 1024
 #define MAX_FILEPATH_SIZE 128
+
+#define HOSTNAME "weather-station"
+
+esp_err_t mdns_service_init()
+{
+    ESP_ERROR_CHECK(mdns_init());
+    ESP_ERROR_CHECK(mdns_hostname_set(HOSTNAME));
+    ESP_ERROR_CHECK(mdns_instance_name_set("Weather Station"));
+    ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
+
+    return ESP_OK;
+}
 
 i2c_master_bus_handle_t initializeI2CBus()
 {
@@ -267,6 +280,12 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_LOGI(TAG, "NVS, TCP/IP, and event loop initialized");
+
+    // Initialize mDNS
+    ESP_ERROR_CHECK(mdns_service_init());
+    ESP_LOGI(TAG, "mDNS initialized");
+
     // Initialize Wi-Fi
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Wi-Fi initialized");
