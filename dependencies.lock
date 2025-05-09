@@ -45,6 +45,36 @@ dependencies:
     - esp32s2
     - esp32s3
     version: 0.1.1
+  k0i05/esp_bmp390:
+    component_hash: 798347f51b3a1521ec30846ec9fa0fa978af77990278a510e4ee56ff392547f5
+    dependencies:
+    - name: idf
+      require: private
+      version: '>5.3.0'
+    - name: k0i05/esp_type_utils
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=0.0.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32s3
+    version: 1.2.5
+  k0i05/esp_type_utils:
+    component_hash: dfe2feb2117ee060c085ec166b56cfd9d66cef4019216bf8722e45e43a3b562f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>5.3.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    targets:
+    - esp32
+    - esp32s3
+    version: 1.2.5
   protocol_examples_common:
     dependencies: []
     source:
@@ -55,7 +85,8 @@ direct_dependencies:
 - espressif/mdns
 - idf
 - jack-ingithub/aht20
+- k0i05/esp_bmp390
 - protocol_examples_common
-manifest_hash: c7f16e8737173755e3a1980d6c0f7762ee1838cb22f63694f6287ea03cd25144
+manifest_hash: 078cfdb39741dd6a83fb0bfa2d8fdb0677ac5c18515c06b9e304efe9d3e93a1d
 target: esp32s3
 version: 2.0.0
