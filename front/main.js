@@ -55,6 +55,30 @@ const humidity_chart = Highcharts.chart('humidity-chart', {
     },
 });
 
+const pressure_chart = Highcharts.chart('pressure-chart', {
+    title: { text: 'Barometric Pressure' },
+    plotOptions: {
+        line: {
+            dataLabels: { enabled: true }
+        },
+    },
+    xAxis: {
+        title: { text: 'Time' },
+        type: 'datetime',
+    },
+    yAxis: {
+        title: { text: 'Barometric Pressure (hPa)' }
+    },
+    series: [{
+        showInLegend: false,
+        name: 'Hectopascals',
+        data: [],
+    }],
+    credits: {
+        enabled: false
+    },
+});
+
 function roundNumber(num, n) {
     return Math.round(num * Math.pow(10, n)) / Math.pow(10, n);
 }
@@ -76,6 +100,10 @@ async function updateCharts() {
         if(data.humidity) {
             const humidity = roundNumber(data.humidity, 2);
             humidity_chart.series[0].addPoint([timestamp, humidity], animation=true);
+        }
+        if(data.pressure) {
+            const pressure = roundNumber(data.pressure, 2);
+            pressure_chart.series[0].addPoint([timestamp, pressure], animation=true);
         }
     } catch (error) {
         console.error(error);
