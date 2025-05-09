@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include "aht20.h"
+#include "bmp390.h"
 #include "cJSON.h"
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
@@ -20,6 +21,7 @@ const static char *TAG = "weather-station";
 
 typedef struct {
     aht20_dev_handle_t aht20_handle;
+    bmp390_handle_t bmp390_handle;
 } sensor_handles_t;
 
 #define MAX_BUFFER_SIZE 1024
@@ -68,6 +70,17 @@ aht20_dev_handle_t initializeAHT20(i2c_master_bus_handle_t bus_handle)
     return aht20_handle;
 }
 
+bmp390_handle_t initializeBMP390(i2c_master_bus_handle_t bus_handle)
+{
+    bmp390_handle_t bm390_handle;
+
+    const bmp390_config_t bm390_config = I2C_BMP390_CONFIG_DEFAULT;
+
+    ESP_ERROR_CHECK(bmp390_init(bus_handle, &bm390_config, &bm390_handle));
+
+    return bm390_handle;
+}
+
 sensor_handles_t* sensors_init()
 {
     // Initialize I2C bus
@@ -78,13 +91,17 @@ sensor_handles_t* sensors_init()
     const aht20_dev_handle_t aht20_handle = initializeAHT20(bus_handle);
     ESP_LOGI(TAG, "AHT20 device added");
 
-    sensor_handles_t *sensor_handles = malloc(sizeof(sensor_handles));
+    const bmp390_handle_t bmp390_handle = initializeBMP390(bus_handle);
+    ESP_LOGI(TAG, "BMP390 device added");
+
+    sensor_handles_t *sensor_handles = malloc(sizeof(sensor_handles_t));
     if (sensor_handles == NULL) {
         ESP_LOGE(TAG, "Failed to allocate memory for sensor handles");
         return NULL;
     }
 
     sensor_handles->aht20_handle = aht20_handle;
+    sensor_handles->bmp390_handle = bmp390_handle;
     return sensor_handles;
 }
 
@@ -172,11 +189,16 @@ static esp_err_t weather_get_handler(httpd_req_t *req)
     float temp, hum;
     ESP_ERROR_CHECK(aht20_read_float(sensor_handles->aht20_handle, &temp, &hum));
 
+    float _tmp, pres;
+    ESP_ERROR_CHECK(bmp390_get_measurements(sensor_handles->bmp390_handle, &_tmp, &pres));
+    pres /= 100;
+
     httpd_resp_set_type(req, "application/json");
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddNumberToObject(root, "temperature", temp);
     cJSON_AddNumberToObject(root, "humidity", hum);
+    cJSON_AddNumberToObject(root, "pressure", pres);
     const char *temp_info = cJSON_Print(root);
 
     httpd_resp_sendstr(req, temp_info);
