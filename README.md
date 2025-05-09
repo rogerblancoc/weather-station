@@ -1,4 +1,7 @@
-# _Weather Station_
+<p align="center">
+    <img src="front/logo.svg" height=100 center>
+    <h1 align="center">Weather Station</h1>
+</p>
 
 A ESP32-based weather station that monitors and displays temperature, humidity, and barometric pressure.
 
