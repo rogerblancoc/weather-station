@@ -155,6 +155,8 @@ void set_content_type(httpd_req_t *req, const char *filepath)
         type = "application/javascript";
     } else if (strstr(filepath, ".ico")) {
         type = "image/x-icon";
+    } else if (strstr(filepath, ".svg")) {
+        type = "image/svg+xml";
     } else {
         type = "text/plain";
     }
