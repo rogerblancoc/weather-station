@@ -1,4 +1,4 @@
-idf_component_register(SRCS "main.c" "sensors.c"
+idf_component_register(SRCS "sensors.c" "http_server.c" "main.c"
                     INCLUDE_DIRS ".")
 
 set(WEB_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../front")
