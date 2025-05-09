@@ -8,7 +8,7 @@ Highcharts.setOptions({
 });
 
 const temperature_chart = Highcharts.chart('temperature-chart', {
-    title: { text: 'Temperature' },
+    title: { text: 'Temperature (°C)' },
     plotOptions: {
         line: {
             dataLabels: { enabled: true }
@@ -19,7 +19,7 @@ const temperature_chart = Highcharts.chart('temperature-chart', {
         type: 'datetime',
     },
     yAxis: {
-        title: { text: 'Temperature (°C)' }
+        title: { text: 'Temperature' }
     },
     series: [{
         showInLegend: false,
@@ -32,7 +32,7 @@ const temperature_chart = Highcharts.chart('temperature-chart', {
 });
 
 const humidity_chart = Highcharts.chart('humidity-chart', {
-    title: { text: 'Humidity' },
+    title: { text: 'Humidity (%)' },
     plotOptions: {
         line: {
             dataLabels: { enabled: true }
@@ -43,7 +43,7 @@ const humidity_chart = Highcharts.chart('humidity-chart', {
         type: 'datetime',
     },
     yAxis: {
-        title: { text: 'Humidity (%)' }
+        title: { text: 'Humidity' }
     },
     series: [{
         showInLegend: false,
@@ -56,7 +56,7 @@ const humidity_chart = Highcharts.chart('humidity-chart', {
 });
 
 const pressure_chart = Highcharts.chart('pressure-chart', {
-    title: { text: 'Barometric Pressure' },
+    title: { text: 'Barometric Pressure (hPa)' },
     plotOptions: {
         line: {
             dataLabels: { enabled: true }
@@ -67,7 +67,7 @@ const pressure_chart = Highcharts.chart('pressure-chart', {
         type: 'datetime',
     },
     yAxis: {
-        title: { text: 'Barometric Pressure (hPa)' }
+        title: { text: 'Barometric Pressure' }
     },
     series: [{
         showInLegend: false,
