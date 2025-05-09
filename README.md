@@ -15,7 +15,7 @@ This project implements a simple weather monitoring system using an ESP32-S3 mic
     - Barometric pressure (hPa)
 - Web interface with interactive charts
 - RESTful API for accessing sensor data
-- Local network access via mDNS (weather-station.local)
+- Local network access via mDNS ([weather-station.local](http://weather-station.local/))
 
 ## Hardware Requirements
 - ESP32-S3 development board
