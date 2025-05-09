@@ -67,15 +67,15 @@ async function updateCharts() {
         const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
 
+        const timestamp = new Date().getTime();
+
         if(data.temperature) {
             const temperature = roundNumber(data.temperature, 2);
-            const time = new Date().getTime();
-            temperature_chart.series[0].addPoint([time, temperature], animation=true);
+            temperature_chart.series[0].addPoint([timestamp, temperature], animation=true);
         }
         if(data.humidity) {
             const humidity = roundNumber(data.humidity, 2);
-            const time = new Date().getTime();
-            humidity_chart.series[0].addPoint([time, humidity], animation=true);
+            humidity_chart.series[0].addPoint([timestamp, humidity], animation=true);
         }
     } catch (error) {
         console.error(error);
