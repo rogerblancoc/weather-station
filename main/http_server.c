@@ -88,6 +88,13 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 
     if (strcmp(req->uri, "/") == 0) {
         strlcat(filepath, "/index.html", sizeof(filepath));
+    } else if (strstr(req->uri, ".js")) {
+        // If the request is for vendor files, append .gz for gzip compression
+        if(strstr(req->uri, "/vendor/")) {
+            strlcat(req->uri, ".gz", sizeof(req->uri));
+            httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        }
+        strlcat(filepath, req->uri, sizeof(filepath));
     } else {
         strlcat(filepath, req->uri, sizeof(filepath));
     }
