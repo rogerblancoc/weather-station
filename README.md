@@ -21,3 +21,8 @@ This project implements a simple weather monitoring system using an ESP32-S3 mic
 - ESP32-S3 development board
 - AHT20 temperature and humidity sensor
 - BMP390 barometric pressure sensor
+
+## License
+This project is licensed under the GNU General Public License v3.0 or later. It also uses a third-party framework and libraries licensed under the Apache License 2.0 and the MIT License. Both licenses are compatible with the GPLv3.
+
+See the [COPYING](COPYING) file for the full license text.
